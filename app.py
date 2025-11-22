@@ -183,7 +183,12 @@ def ver_lista_completa():
 
 import os
 
+# ... todo o seu código anterior ...
+
 if __name__ == "__main__":
-    # Pega a porta do ambiente ou usa 8080 como padrão
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+    # O Google Cloud fornece a porta via variável de ambiente 'PORT'
+    # Se não houver (no seu PC), usa a 5000
+    port = int(os.environ.get("PORT", 5000))
+    
+    # host='0.0.0.0' é OBRIGATÓRIO para o Cloud Run
+    app.run(host='0.0.0.0', port=port, debug=True)
