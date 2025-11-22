@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>🔍 Busca Avançada</h1>
+
+<form method="POST" style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
+    <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+            <label>Data Início:</label>
+            <input type="date" name="data_inicio" 
+                   value="{{ request.form.get('data_inicio') }}">
+        </div>
+        <div style="flex: 1;">
+            <label>Data Fim:</label>
+            <input type="date" name="data_fim" 
+                   value="{{ request.form.get('data_fim') }}">
+        </div>
+    </div>
+    
+    <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+            <label>Valor Mínimo:</label>
+            <input type="number" name="valor_min" placeholder="ex: 70"
+                   value="{{ request.form.get('valor_min') }}">
+        </div>
+        <div style="flex: 1;">
+            <label>Valor Máximo:</label>
+            <input type="number" name="valor_max" placeholder="ex: 180"
+                   value="{{ request.form.get('valor_max') }}">
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button type="submit" name="acao" value="filtrar" class="btn" style="flex: 1;">
+            🔍 Filtrar na Tela
+        </button>
+        
+        <button type="submit" name="acao" value="baixar" class="btn bg-green" style="flex: 1; background-color: #28a745;">
+            ⬇️ Baixar CSV
+        </button>
+    </div>
+</form>
+
+{% if resultados %}
+    <h3>Resultados Encontrados: {{ resultados|length }}</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for linha in resultados %}
+            <tr>
+                <td>{{ linha[0] }}</td>
+                <td>{{ linha[1] }}</td>
+                <td>{{ linha[2] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+{% endblock %}

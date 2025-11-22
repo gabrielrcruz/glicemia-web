@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glicemia Monitor</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; margin: 0; padding: 0; }
+        header { background-color: #007bff; color: white; padding: 15px; }
+        nav a { color: white; text-decoration: none; margin-right: 15px; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+        .container { max-width: 1000px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .card { padding: 20px; border-radius: 8px; color: white; text-align: center; }
+        .bg-blue { background-color: #17a2b8; }
+        .bg-green { background-color: #28a745; }
+        .bg-red { background-color: #dc3545; }
+        .bg-orange { background-color: #fd7e14; }
+        .btn { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        input[type="text"], input[type="date"], input[type="number"], textarea { padding: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div style="max-width: 1000px; margin: 0 auto;">
+        <h2>🩸 Monitor de Glicemia</h2>
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/busca">Busca Avançada</a>
+            <a href="/relatorio-master">Relatório Completo</a>
+            <a href="/media-diaria">Médias Diárias</a>
+            <a href="/frequencia">Frequência</a>
+            <span>| Filtros: </span>
+            <a href="/filtros/hipo">Hipo</a>
+            <a href="/filtros/alvo">Alvo</a>
+            <a href="/filtros/hiper">Hiper</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

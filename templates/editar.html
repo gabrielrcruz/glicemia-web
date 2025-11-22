@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>✏️ Editar Registro</h1>
+
+<form method="POST" style="max-width: 400px; margin: 0 auto;">
+    <label>Data:</label>
+    <input type="date" name="data" value="{{ dado[0] }}" required>
+
+    <label>Hora:</label>
+    <input type="time" name="hora" value="{{ dado[1] }}" required> <label>Valor (mg/dL):</label>
+    <input type="number" name="valor" value="{{ dado[2] }}" required>
+
+    <div style="margin-top: 20px;">
+        <button type="submit" class="btn bg-green">Salvar Alterações</button>
+        <a href="/" class="btn bg-red" style="text-decoration: none; background-color: #6c757d;">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

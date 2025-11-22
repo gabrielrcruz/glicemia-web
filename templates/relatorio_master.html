@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>📊 Relatório Estatístico Completo</h1>
+
+{% if info %}
+    <div class="card-grid">
+        <div class="card bg-blue">
+            <h3>Total Medições</h3>
+            <h1>{{ info.total_medicoes }}</h1>
+        </div>
+        <div class="card bg-blue">
+            <h3>Média Global</h3>
+            <h1>{{ info.media_global }}</h1>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 20px; margin-top: 20px;">
+        <div style="flex: 1; padding: 20px; background: #ffeeba; border-radius: 8px;">
+            <h3>⏰ Padrão Horário</h3>
+            {% if info.pior_hora %}
+                <p>O horário com a média mais alta é às:</p>
+                <h2 style="color: #d39e00;">{{ info.pior_hora.hora }}:00</h2>
+                <p>Média: {{ info.pior_hora.media }} mg/dL</p>
+            {% else %}
+                <p>Dados insuficientes.</p>
+            {% endif %}
+        </div>
+
+        <div style="flex: 1; padding: 20px; background: #d4edda; border-radius: 8px;">
+            <h3>🌟 Melhor Horário</h3>
+            {% if info.melhor_hora %}
+                <p>O horário mais estável é às:</p>
+                <h2 style="color: #155724;">{{ info.melhor_hora.hora }}:00</h2>
+                <p>Média: {{ info.melhor_hora.media }} mg/dL</p>
+            {% else %}
+                <p>Dados insuficientes.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <h3>📅 Ranking dos Dias da Semana (Do "Pior" para o "Melhor")</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Dia da Semana</th>
+                <th>Média Glicêmica</th>
+                <th>Qtd Medições</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dia in info.ranking_dias %}
+            <tr>
+                <td>{{ dia.dia_nome }}</td>
+                <td {% if dia.media > 180 %}style="color:red; font-weight:bold;"{% endif %}>
+                    {{ dia.media }}
+                </td>
+                <td>{{ dia.qtd }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% else %}
+    <p>Não foi possível gerar o relatório.</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>📅 Histórico de Média Diária</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Média do Dia</th>
+            <th>Qtd de Testes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in dados %}
+        <tr>
+            <td>{{ item.data }}</td>
+            <td>
+                <div style="background: #e9ecef; width: 100px; height: 10px; display: inline-block;">
+                    <div style="background: blue; width: {{ item.media / 3 }}%; height: 100%;"></div>
+                </div>
+                {{ item.media }}
+            </td>
+            <td>{{ item.qtd }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

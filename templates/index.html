@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Visão Geral</h1>
+
+<div class="card-grid">
+    <div class="card bg-blue">
+        <h3>Média Geral</h3>
+        {% if estatisticas %}
+            <h1>{{ estatisticas.media_global }}</h1>
+            <p>mg/dL</p>
+        {% else %}
+            <p>Sem dados</p>
+        {% endif %}
+    </div>
+
+    <div class="card bg-orange">
+        <h3>HbA1c Estimada</h3>
+        <h1>{{ glicada }}%</h1>
+        <p>Glicada</p>
+    </div>
+
+    <div class="card bg-green">
+        <h3>No Alvo (TIR)</h3>
+        {% if tempo_alvo %}
+            <h1>{{ tempo_alvo.alvo_pct }}%</h1>
+            <small>Hipo: {{ tempo_alvo.hipo_pct }}% | Hiper: {{ tempo_alvo.hiper_pct }}%</small>
+        {% else %}
+            <p>--</p>
+        {% endif %}
+    </div>
+
+    <div class="card bg-red">
+        <h3>Variabilidade</h3>
+        {% if var %}
+            <h1>{{ var.cv }}%</h1>
+            <p>{{ var.status }}</p>
+        {% else %}
+            <p>--</p>
+        {% endif %}
+    </div>
+</div>
+
+<hr>
+
+<div style="margin-top: 20px;">
+    <h3>📋 Últimas 10 Medições</h3>
+    
+    {% if dados %}
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Valor</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for linha in dados %}
+            <tr>
+                <td>{{ linha[0] }}</td>
+                <td>{{ linha[1] }}</td>
+                <td {% if linha[2]|float < 70 or linha[2]|float > 180 %} style="font-weight: bold; color: #d9534f;" {% endif %}>
+                    {{ linha[2] }}
+                </td>
+                <td>
+                    <a href="/editar/{{ linha[3] }}" title="Editar" style="text-decoration: none; font-size: 1.2em;">✏️</a>
+                    &nbsp;
+                    <a href="/deletar/{{ linha[3] }}" title="Excluir" 
+                       onclick="return confirm('Tem certeza que deseja excluir a medição de {{ linha[0] }} às {{ linha[1] }}?')"
+                       style="text-decoration: none; font-size: 1.2em;">🗑️</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p style="text-align: right;"><a href="/dados">Ver histórico completo >></a></p>
+    {% else %}
+        <p>Nenhuma medição encontrada.</p>
+    {% endif %}
+</div>
+
+<hr>
+
+<div style="margin-top: 30px; background: #eee; padding: 20px; border-radius: 8px;">
+    <h3>📤 Adicionar Novas Medições</h3>
+    <p>Cole abaixo as linhas do CSV (Data,Hora,Valor) ou digite manualmente:</p>
+    <form action="/adicionar" method="POST">
+        <textarea name="novos_dados" rows="5" placeholder="2025-10-25,08:00,110&#10;2025-10-25,12:00,140"></textarea>
+        <button type="submit" class="btn">Salvar Dados</button>
+    </form>
+</div>
+
+{% endblock %}

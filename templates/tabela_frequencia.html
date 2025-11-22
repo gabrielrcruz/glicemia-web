@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Frequência de Testes</h1>
+<p>Quantas vezes você mediu a glicemia em cada dia.</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Quantidade</th>
+            <th>% do Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in lista %}
+        <tr>
+            <td>{{ item.data }}</td>
+            <td>{{ item.qtd }}</td>
+            <td>{{ item.porcentagem }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
