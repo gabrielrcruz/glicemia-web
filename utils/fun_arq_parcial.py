@@ -15,7 +15,7 @@ def parcial_arq():
         print("---------------------")
     
     while True:
-            from app import dados_limpos
+            from app_flask import dados_limpos
             menu_arquivo_parcial()
             escolha = input("Digite sua escolha: ")
             

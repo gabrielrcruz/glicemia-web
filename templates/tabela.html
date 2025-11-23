@@ -1,37 +1,79 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>{{ titulo }}</h1>
-    <p><a href="/">Voltar ao Dashboard</a></p>
 
-    {% if lista %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Hora</th>
-                    <th>Valor</th>
-                    <th>Ações</th> </tr>
-            </thead>
-            <tbody>
-                {% for linha in lista %}
-                <tr>
-                    <td>{{ linha[0] }}</td>
-                    <td>{{ linha[1] }}</td>
-                    <td style="font-weight: bold;">{{ linha[2] }}</td>
-                    
-                    <td>
-                        <a href="/editar/{{ linha[3] }}" style="text-decoration: none;">✏️</a>
-                        &nbsp;
-                        <a href="/deletar/{{ linha[3] }}" style="text-decoration: none;" 
-                           onclick="return confirm('Tem certeza que deseja excluir este registro?')">🗑️</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <p>Total de registros: {{ lista|length }}</p>
-    {% else %}
-        <p>Nenhum registro encontrado.</p>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>{{ titulo }}</h1>
+    
+    {% if tipo_filtro %}
+    <form action="{{ url_for('pagina_filtros', tipo=tipo_filtro) }}" method="POST">
+        <button type="submit" name="acao" value="baixar" class="btn-acao" style="background-color: #28a745; cursor: pointer; border: none; color: white; padding: 10px 20px; border-radius: 5px; font-size: 16px;">
+            📥 Baixar CSV
+        </button>
+    </form>
     {% endif %}
+</div>
+
+{% if lista %}
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Hora</th>
+                <th>Valor (mg/dL)</th>
+                <th>Status</th>
+                
+                {% if not tipo_filtro %}
+                <th>Ações</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in lista %}
+            <tr>
+                <td style="padding: 8px; text-align: center;">{{ item[0] }}</td>
+                <td style="padding: 8px; text-align: center;">{{ item[1] }}</td>
+                
+                {% set valor = item[2] | int %}
+                <td style="padding: 8px; text-align: center; font-weight: bold; color: 
+                    {% if valor < 70 %}#dc3545
+                    {% elif valor > 180 %}#ffc107
+                    {% else %}#28a745
+                    {% endif %};">
+                    {{ valor }}
+                </td>
+
+                <td style="padding: 8px; text-align: center;">
+                    {% if valor < 70 %}Hipoglicemia
+                    {% elif valor > 180 %}Hiperglicemia
+                    {% else %}Normal
+                    {% endif %}
+                </td>
+
+                {% if not tipo_filtro %}
+                <td style="padding: 8px; text-align: center;">
+                    {% set id_real = loop.length - 1 - loop.index0 %}
+                    
+                    <a href="{{ url_for('editar', id_linha=id_real) }}" style="text-decoration: none; margin-right: 10px;">
+                        ✏️ Editar
+                    </a>
+                    
+                    <a href="{{ url_for('deletar', id_linha=id_real) }}" style="text-decoration: none; color: red;" 
+                       onclick="return confirm('Tem certeza que deseja excluir este registro?');">
+                        🗑️ Excluir
+                    </a>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Nenhum registro encontrado.</p>
+{% endif %}
+
+<div style="margin-top: 20px;">
+    <a href="{{ url_for('index') }}" class="btn-voltar" style="text-decoration: none; background: #6c757d; color: white; padding: 10px 20px; border-radius: 5px;">⬅ Voltar</a>
+</div>
+
 {% endblock %}

@@ -1,7 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, flash,render_template, request, redirect, url_for, Response
 import os
 
-# --- Importando suas funções da pasta utils ---
+# --- IMPORTAÇÕES ORGANIZADAS ---
 from utils.gerenciador_arquivo import salvar_novas_medicoes, excluir_registro_por_id, atualizar_registro_por_id
 from utils.fun_info_arquivo import ler_dados_csv
 from utils.fun_dados_estatisticos import relatorio_completo_master
@@ -9,32 +9,28 @@ from utils.analises import calcular_tempo_no_alvo, calcular_hba1c_estimada, calc
 from utils.filtros import filtrar_por_faixa, agrupar_medias_diarias
 from utils.busca import buscar_dados
 from utils.frequencia import calcular_frequencia_diaria
-from utils.gerenciador_arquivo import salvar_novas_medicoes
-from flask import Response 
 from utils.exportacao import gerar_csv_para_download 
+from utils.processador_upload import processar_arquivo_upload
 
 app = Flask(__name__)
 
+app.secret_key = "sua_chave_secreta_aqui" # Necessário para usar flash messages (feedback)
 # Configuração: Caminho do arquivo
 ARQUIVO_CSV = 'dados_glicemia.csv'
 
 # --- ROTA INICIAL (DASHBOARD) ---
 @app.route('/')
 def index():
-    # 1. CARREGAMOS OS DADOS AQUI
     dados_limpos = ler_dados_csv(ARQUIVO_CSV)
-    
-    # Se o arquivo estiver vazio ou não existir
     if not dados_limpos:
         return "Erro: Arquivo de dados não encontrado ou vazio."
 
-    # 2. Chamamos as funções passando os dados carregados
     stats_master = relatorio_completo_master(dados_limpos)
     tir = calcular_tempo_no_alvo(dados_limpos)
     hba1c = calcular_hba1c_estimada(dados_limpos)
     variabilidade = calcular_variabilidade(dados_limpos)
     ultimas_medicoes = dados_limpos[::-1][:10]
-    # 3. Enviamos tudo para o HTML
+
     return render_template('index.html', 
                            estatisticas=stats_master,
                            tempo_alvo=tir,
@@ -42,16 +38,28 @@ def index():
                            var=variabilidade,
                            dados=ultimas_medicoes)
 
-# --- ROTA PARA LISTAS FILTRADAS (HIPO/HIPER/ALVO) ---
-@app.route('/filtros/<tipo>')
+# --- ROTA PARA LISTAS FILTRADAS ---
+@app.route('/filtros/<tipo>', methods=['GET', 'POST'])
 def pagina_filtros(tipo):
-    # Carrega dados novamente para garantir atualização
     dados_limpos = ler_dados_csv(ARQUIVO_CSV)
-    
-    # Usa a função de filtro
     resultado = filtrar_por_faixa(dados_limpos, tipo)
     
-    return render_template('tabela.html', lista=resultado, titulo=f"Filtro: {tipo}")
+    # Verifica se o botão de download foi apertado
+    acao = request.form.get('acao')
+    
+    if acao == 'baixar':
+        csv_conteudo = gerar_csv_para_download(resultado) 
+        return Response(
+            csv_conteudo,
+            mimetype="text/csv",
+            headers={"Content-disposition": f"attachment; filename=relatorio_{tipo}.csv"}
+        )
+    
+    # IMPORTANTE: Passe 'tipo_filtro=tipo' para o template saber quem ele é
+    return render_template('tabela.html', 
+                           lista=resultado, 
+                           titulo=f"Filtro: {tipo}", 
+                           tipo_filtro=tipo)
 
 # --- ROTA PARA MÉDIA DIÁRIA ---
 @app.route('/media-diaria')
@@ -67,36 +75,24 @@ def pagina_frequencia():
     freq = calcular_frequencia_diaria(dados_limpos)
     return render_template('tabela_frequencia.html', lista=freq)
 
-# --- ROTA DE BUSCA ---
 # --- ROTA DE BUSCA COM DOWNLOAD ---
-# No app.py
-
 @app.route('/busca', methods=['GET', 'POST'])
 def pagina_busca():
-    resultados = [] # Começa vazio
+    resultados = []
     
     if request.method == 'POST':
-        # 1. Carrega TUDO
         dados_limpos = ler_dados_csv(ARQUIVO_CSV)
-        
-        # 2. Pega os filtros do HTML
         dt_ini = request.form.get('data_inicio')
         dt_fim = request.form.get('data_fim')
         v_min = request.form.get('valor_min')
         v_max = request.form.get('valor_max')
         
-        # 3. APLICA O FILTRO (Crucial: isso tem que acontecer antes do download)
         resultados = buscar_dados(dados_limpos, dt_ini, dt_fim, v_min, v_max)
         
-        # 4. Verifica qual botão foi apertado
         acao = request.form.get('acao')
         
         if acao == 'baixar':
-            # O ERRO ESTAVA AQUI:
-            # Você deve passar 'resultados' (que foi filtrado acima), 
-            # e NÃO 'dados_limpos' (que é o arquivo inteiro).
             csv_conteudo = gerar_csv_para_download(resultados) 
-            
             return Response(
                 csv_conteudo,
                 mimetype="text/csv",
@@ -105,90 +101,94 @@ def pagina_busca():
             
     return render_template('busca.html', resultados=resultados)
 
-# --- ROTA DE UPLOAD (ADICIONAR DADOS) ---
+# --- ROTA DE UPLOAD ---
 @app.route('/adicionar', methods=['POST'])
 def adicionar_dados():
-    # Pega o texto da área de texto do HTML
     novos_dados_texto = request.form.get('novos_dados')
-    
     if novos_dados_texto:
-        # Quebra o texto em uma lista de linhas
         linhas = novos_dados_texto.split('\n')
-        
         sucesso, msg = salvar_novas_medicoes(ARQUIVO_CSV, linhas)
         if sucesso:
             print(f"Sucesso: {msg} registros adicionados.")
         else:
             print(f"Erro: {msg}")
-            
     return redirect(url_for('index'))
 
+# --- ROTA RELATÓRIO MASTER (ATUALIZADA) ---
 @app.route('/relatorio-master')
 def pagina_relatorio_master():
     dados_limpos = ler_dados_csv(ARQUIVO_CSV)
+    # A função agora retorna os dados de frequência também
     insights = relatorio_completo_master(dados_limpos)
     return render_template('relatorio_master.html', info=insights)
 
-# --- ROTA PARA DELETAR ---
+# --- ROTA DELETAR ---
 @app.route('/deletar/<int:id_linha>')
 def deletar(id_linha):
     sucesso, msg = excluir_registro_por_id(ARQUIVO_CSV, id_linha)
-    if sucesso:
-        print(f"Linha {id_linha} excluída.")
-    else:
-        print(f"Erro: {msg}")
-    # Volta para a página anterior ou para a home
     return redirect(request.referrer or url_for('index'))
 
-# --- ROTA PARA ABRIR A TELA DE EDIÇÃO ---
+# --- ROTA EDITAR ---
 @app.route('/editar/<int:id_linha>', methods=['GET', 'POST'])
 def editar(id_linha):
-    # Se for salvar a edição (POST)
     if request.method == 'POST':
         nova_data = request.form.get('data')
         nova_hora = request.form.get('hora')
         novo_valor = request.form.get('valor')
-        
-        sucesso, msg = atualizar_registro_por_id(ARQUIVO_CSV, id_linha, nova_data, nova_hora, novo_valor)
-        return redirect(url_for('index')) # Volta pra home após salvar
-
-    # Se for apenas abrir o formulário (GET)
+        atualizar_registro_por_id(ARQUIVO_CSV, id_linha, nova_data, nova_hora, novo_valor)
+        return redirect(url_for('index'))
     else:
-        # Precisamos achar os dados atuais dessa linha para preencher o formulário
-        # Vamos ler o arquivo bruto para pegar exatamente aquela linha
         try:
             with open(ARQUIVO_CSV, 'r', encoding='utf-8') as f:
                 linhas = f.readlines()
                 linha_atual = linhas[id_linha].strip().split(',')
-                # linha_atual será algo como ['2025-10-10', '12:00', '98']
-                
             return render_template('editar.html', id=id_linha, dado=linha_atual)
         except:
             return "Erro ao carregar linha para edição."
-        
-        # --- ROTA PARA LISTA COMPLETA (HISTÓRICO) ---
+
+# --- ROTA LISTA COMPLETA ---
 @app.route('/dados')
 def ver_lista_completa():
-    # 1. Carrega os dados
     dados_limpos = ler_dados_csv(ARQUIVO_CSV)
-    
-    # 2. Inverte a lista para mostrar os mais recentes no topo (opcional, mas recomendado)
-    # [::-1] faz a inversão da lista
     dados_invertidos = dados_limpos[::-1]
+    return render_template('tabela.html', lista=dados_invertidos, titulo="Histórico Completo de Medições")
+
+
+# --- NOVA ROTA: UPLOAD DE ARQUIVO ---
+@app.route('/upload', methods=['POST'])
+def upload_arquivo():
+    # Verifica se o arquivo está na requisição
+    if 'arquivo_csv' not in request.files:
+        flash('Nenhum arquivo selecionado.')
+        return redirect(url_for('index'))
     
-    # 3. Usa o mesmo template 'tabela.html' que usamos nos filtros
-    return render_template('tabela.html', 
-                           lista=dados_invertidos, 
-                           titulo="Histórico Completo de Medições")
+    arquivo = request.files['arquivo_csv']
+    
+    # Verifica se o nome está vazio
+    if arquivo.filename == '':
+        flash('Nenhum arquivo selecionado.')
+        return redirect(url_for('index'))
 
-import os
+    # Verifica a extensão (Somente CSV)
+    if arquivo and arquivo.filename.endswith('.csv'):
+        try:
+            # Processa o arquivo usando a nova função
+            dados_formatados, qtd = processar_arquivo_upload(arquivo)
+            
+            if qtd > 0:
+                # Salva no arquivo principal usando a função que você já tem
+                salvar_novas_medicoes(ARQUIVO_CSV, dados_formatados)
+                flash(f'Sucesso! {qtd} novas medições foram importadas do arquivo {arquivo.filename}.')
+            else:
+                flash('O arquivo foi lido, mas nenhuma medição válida foi encontrada ou o formato está incorreto.')
+                
+        except Exception as e:
+            flash(f'Erro ao processar arquivo: {str(e)}')
+    else:
+        flash('Formato inválido. Por favor, envie apenas arquivos .csv')
 
-# ... todo o seu código anterior ...
+    return redirect(url_for('index'))
 
 if __name__ == "__main__":
-    # O Google Cloud fornece a porta via variável de ambiente 'PORT'
-    # Se não houver (no seu PC), usa a 5000
     port = int(os.environ.get("PORT", 5000))
-    
-    # host='0.0.0.0' é OBRIGATÓRIO para o Cloud Run
     app.run(host='0.0.0.0', port=port, debug=True)

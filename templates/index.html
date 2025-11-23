@@ -92,4 +92,25 @@
     </form>
 </div>
 
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div style="padding: 10px; background-color: #d4edda; color: #155724; margin-bottom: 20px; border-radius: 5px;">
+      {% for message in messages %}
+        <p style="margin: 0;">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="card" style="margin-bottom: 20px; padding: 20px;">
+    <h3>📂 Importar CSV do Aparelho</h3>
+    <form action="/upload" method="POST" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center;">
+        <input type="file" name="arquivo_csv" accept=".csv" required style="padding: 5px;">
+        <button type="submit" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Enviar Arquivo
+        </button>
+    </form>
+    <small style="color: gray;">Formatos aceitos: Arquivos .csv exportados do medidor.</small>
+</div>
+
 {% endblock %}
