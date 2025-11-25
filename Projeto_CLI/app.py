@@ -37,9 +37,9 @@ def menu_principal():
             print("Primeira medição:", dados_limpos[1])
             print("Ultima Medição:", dados_limpos[-1])
         elif escolha == '2':
-            parcial_arq()
+            parcial_arq(dados_limpos)
         elif escolha == '3':
-            dados_agrupados()
+            dados_agrupados(dados_limpos)
         elif escolha == '4':
             gerar_relatorio_completo(dados_limpos)
         elif escolha == '5':

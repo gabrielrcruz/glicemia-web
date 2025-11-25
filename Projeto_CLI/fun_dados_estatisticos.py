@@ -16,6 +16,23 @@ def calcular_mediana(valores):
         # Se for ímpar, pega o do meio exato
         return valores_sorted[n//2]
 
+
+def Mod_Glicemia(lista_dados):
+    valores = []
+    linhas_validas = 0
+    for linha in lista_dados[1:]:
+        if len(linha) < 3: continue
+        
+        try:
+            # Extrai Valor
+            val = int(float(linha[2]))
+            valores.append(val)
+            linhas_validas += 1
+        except ValueError:
+            continue
+
+    
+
 def gerar_relatorio_completo(lista_dados):
     print("\n=== RELATÓRIO ESTATÍSTICO MASTER ===")
     print("Calculando métricas, padrão horário e dias da semana...")

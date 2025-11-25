@@ -2,7 +2,7 @@ from fun_interface import exibir_menu
 
 
 
-def dados_agrupados():
+def dados_agrupados(lista_dados):
 
     def menu_dados_agrupados():
         print("\n--- Menu de informações Parciais---")
@@ -15,7 +15,7 @@ def dados_agrupados():
         print("---------------------")
     
     while True:
-            from app import dados_limpos
+            
             menu_dados_agrupados()
             escolha = input("Digite sua escolha: ")
             
@@ -85,7 +85,7 @@ def dados_agrupados():
 
                     except Exception as e:
                         print(f"Erro ao salvar o arquivo: {e}")
-                gerar_tempo_no_alvo(dados_limpos)
+                gerar_tempo_no_alvo(lista_dados)
             elif escolha == '2':
                 print("Escolha 2")
                 def gerar_estimativa_hba1c(lista_dados):
@@ -133,7 +133,7 @@ def dados_agrupados():
                     except Exception as e:
                         print(f"Erro ao salvar: {e}")
 
-                gerar_estimativa_hba1c(dados_limpos)
+                gerar_estimativa_hba1c(lista_dados)
             elif escolha == '3':
                 import math 
                 print("Escolha 3")
@@ -190,7 +190,7 @@ def dados_agrupados():
 
                     except Exception as e:
                         print(f"Erro ao salvar: {e}")
-                gerar_variabilidade(dados_limpos)
+                gerar_variabilidade(lista_dados)
             elif escolha == '4':
                 print("Escolha 4")
                 def gerar_frequencia_diaria(lista_dados):
@@ -251,7 +251,7 @@ def dados_agrupados():
 
                     except Exception as e:
                         print(f"Erro ao salvar: {e}")
-                gerar_frequencia_diaria(dados_limpos)
+                gerar_frequencia_diaria(lista_dados)
                 
             elif escolha == '5':
                 print("Escolha 5")

@@ -2,7 +2,7 @@ from fun_interface import exibir_menu
 
 
 
-def parcial_arq():
+def parcial_arq(dados):
 
     def menu_arquivo_parcial():
         print("\n--- Menu de informações Parciais---")
@@ -66,7 +66,7 @@ def parcial_arq():
                             print(f"Ocorreu um erro: {e}")
 
                 
-                salvar_hipoglicemia_da_lista(dados_limpos, nome_arquivo)
+                salvar_hipoglicemia_da_lista(dados, nome_arquivo)
 
 
             elif escolha == '2':
@@ -115,7 +115,7 @@ def parcial_arq():
                             print(f"Ocorreu um erro: {e}")
 
                 
-                salvar_hiperglicemia(dados_limpos, nome_arquivo)
+                salvar_hiperglicemia(dados, nome_arquivo)
 
                     
 
@@ -165,7 +165,7 @@ def parcial_arq():
                             print(f"Ocorreu um erro: {e}")
 
                 
-                salvar_valor_alvo(dados_limpos, nome_arquivo)
+                salvar_valor_alvo(dados, nome_arquivo)
 
             elif escolha == '4':
                 print("Escolha 4")
@@ -218,7 +218,7 @@ def parcial_arq():
                 
                 
                 # Chama a função
-                ordenar_decrescente(dados_limpos, nome_arquivo)
+                ordenar_decrescente(dados, nome_arquivo)
 
             elif escolha == '5':
                 print("Escolha 5")
@@ -280,7 +280,7 @@ def parcial_arq():
 
                     except Exception as e:
                         print(f"Erro ao salvar resumo: {e}")
-                gerar_media_diaria(dados_limpos, nome_arquivo)    
+                gerar_media_diaria(dados, nome_arquivo)    
 
                 
             elif escolha == '6':
